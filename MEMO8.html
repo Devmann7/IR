@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Memorice Ingersoll Rand</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+
+    body {
+      background: #000;
+      overflow: hidden;
+      font-family: sans-serif;
+      color: #e9faff;
+      position: relative;
+    }
+
+    #totem {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 1080px;
+      height: 1920px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 24px 12px;
+      background: #000;
+      transform-origin: center center;
+    }
+
+    #bg-video {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      object-fit: cover; z-index: -1; pointer-events: none;
+    }
+
+    /* --- PANTALLA DE INICIO --- */
+    #startScreen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    .play-button {
+      padding: 40px 80px;
+      font-size: 60px;
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(135deg, #e11b15, #ff4444);
+      border: 4px solid #fff;
+      border-radius: 999px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      box-shadow: 0 0 30px rgba(225, 27, 21, 0.6);
+      animation: pulsePlay 2s infinite;
+      transition: transform 0.2s;
+    }
+
+    @keyframes pulsePlay {
+      0% { transform: scale(1); box-shadow: 0 0 20px rgba(225, 27, 21, 0.6); }
+      50% { transform: scale(1.1); box-shadow: 0 0 60px rgba(225, 27, 21, 0.9); }
+      100% { transform: scale(1); box-shadow: 0 0 20px rgba(225, 27, 21, 0.6); }
+    }
+
+    h1 {
+      margin: 0 0 12px 0;
+      text-align: center;
+      font-size: 32px;
+      text-shadow: 0 0 12px rgba(0, 200, 255, 0.9);
+      animation: flotarTitulo 4s ease-in-out infinite;
+    }
+
+    @keyframes flotarTitulo {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    #topBar {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 95%;
+      margin-bottom: 14px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(9, 39, 74, 0.72);
+      box-shadow: 0 0 18px rgba(0, 180, 255, 0.55);
+      border: 1px solid rgba(160, 225, 255, 0.7);
+      backdrop-filter: blur(10px);
+    }
+
+    .stat { display: flex; flex-direction: column; align-items: center; }
+    .stat-label { font-size: 18px; color: #c0eaff; text-transform: uppercase; }
+    .stat-value { font-size: 26px; font-weight: bold; text-shadow: 0 0 6px rgba(0, 200, 255, 0.9); }
+    
+    .low-time { color: #ff4444; animation: pulsoRojo 1s infinite; }
+    @keyframes pulsoRojo {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    #message {
+      margin: 20px 0;
+      font-size: 36px;
+      text-align: center;
+      min-height: 100px;
+      font-weight: bold;
+      line-height: 1.2;
+    }
+
+    #message.win {
+      color: #ffffff;
+      text-shadow: 0 0 12px rgba(0, 200, 255, 0.9);
+      animation: winZoomFade 0.8s ease-out forwards;
+    }
+    
+    #message.lose { color: #ff4444; }
+
+    @keyframes winZoomFade {
+      0% { opacity: 0; transform: scale(0.6); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    #gameContainer {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    #game {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr); 
+      gap: 15px;
+      width: 95%;
+      max-width: 900px;
+    }
+
+    .card { perspective: 800px; cursor: pointer; aspect-ratio: 1 / 1; }
+    .card-inner {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.5s;
+    }
+
+    .card.flipped .card-inner { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute; width: 100%; height: 100%;
+      backface-visibility: hidden;
+      border-radius: 8px;
+      border: 2px solid rgba(190, 235, 255, 0.6);
+      display: flex; justify-content: center; align-items: center;
+      overflow: hidden;
+    }
+
+    .card-front { background: radial-gradient(circle at 30% 30%, #d9f7fe 0%, #020818 100%); }
+    .card-back { background: white; }
+
+    .card-front img, .card-back img { 
+      width: 100%; height: 100%; 
+      object-fit: contain; 
+      padding: 5px;
+    }
+
+    .card-back { transform: rotateY(180deg); }
+    .card.hidden { visibility: hidden; }
+
+    #bottomBar { margin-top: 30px; display: flex; justify-content: center; }
+    #bottomBar button {
+      padding: 12px 30px; font-size: 18px; border-radius: 999px;
+      border: 1px solid rgba(160, 225, 255, 0.9);
+      background: linear-gradient(135deg, #0ea5e9, #22d3ee);
+      color: #012132; font-weight: bold; cursor: pointer;
+    }
+
+    #bottomBar.win { margin-top: 50px; }
+    #bottomBar.win button { font-size: 28px; padding: 20px 50px; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+  </style>
+</head>
+<body>
+  
+  <div id="totem">
+    <video id="bg-video" autoplay muted loop playsinline>
+      <source src="img/BACK_B.mp4" type="video/mp4">
+    </video>
+
+    <!-- PANTALLA DE INICIO -->
+    <div id="startScreen">
+        <button class="play-button" onclick="empezarJuegoDesdeCero()">PLAY GAME</button>
+    </div>
+    
+    <h1>Memorice Ingersoll Rand</h1>
+
+    <div id="topBar">
+      <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value" id="timerValue">00:25</span></div>
+      <div class="stat"><span class="stat-label">Intentos</span><span class="stat-value" id="attemptsValue">0</span></div>
+      <div class="stat">
+        <span class="stat-label">Puntos</span>
+        <span class="stat-value"><span id="scoreValue">0</span> / <span id="totalPairs">8</span></span>
+      </div>
+    </div>
+
+    <div id="message"></div>
+
+    <div id="gameContainer"><div id="game"></div></div>
+
+    <div id="bottomBar">
+      <button id="btnReiniciar" onclick="reiniciarJuego()">Reiniciar juego</button>
+    </div>
+  </div>
+
+  <script>
+    const FRONT_IMAGE = "img/dorso.png";
+    const TIEMPO_MAXIMO = 25;
+    
+    const imagenesBase = [
+      "img/img1.png", "img/img2.png", "img/img3.png", "img/img4.png",
+      "img/img5.png", "img/img6.png", "img/img7.png", "img/img8.png"
+    ];
+
+    const TOTAL_PARES = imagenesBase.length;
+    let cartas = [], primeraCarta = null, segundaCarta = null;
+    let bloqueo = true, puntos = 0, intentos = 0, tiempoRestante = TIEMPO_MAXIMO, timerInterval = null;
+
+    function empezarJuegoDesdeCero() {
+        document.getElementById("startScreen").style.display = "none";
+        prepararTablero();
+    }
+
+    // Nueva función para dejar el juego listo antes de la vista previa
+    function prepararTablero() {
+      puntos = 0; intentos = 0; 
+      tiempoRestante = TIEMPO_MAXIMO;
+      document.getElementById("scoreValue").textContent = "0";
+      document.getElementById("attemptsValue").textContent = "0";
+      document.getElementById("timerValue").textContent = `00:${TIEMPO_MAXIMO}`;
+      document.getElementById("message").textContent = "";
+      document.getElementById("message").className = "";
+      document.getElementById("gameContainer").style.display = "flex";
+      document.getElementById("bottomBar").classList.remove("win");
+      crearCartas();
+    }
+
+    function crearCartas() {
+      const contenedor = document.getElementById("game");
+      contenedor.innerHTML = "";
+      cartas = [];
+      const imagenesParaJuego = [...imagenesBase, ...imagenesBase];
+      imagenesParaJuego.sort(() => Math.random() - 0.5);
+
+      imagenesParaJuego.forEach((src) => {
+        const card = document.createElement("div");
+        card.classList.add("card");
+        card.dataset.imagen = src;
+        card.innerHTML = `
+          <div class="card-inner">
+            <div class="card-face card-front"><img src="${FRONT_IMAGE}"></div>
+            <div class="card-face card-back"><img src="${src}"></div>
+          </div>`;
+        card.addEventListener("click", () => manejarClickCarta(card));
+        contenedor.appendChild(card);
+        cartas.push(card);
+      });
+
+      mostrarVistaPrevia();
+    }
+
+    function mostrarVistaPrevia() {
+      bloqueo = true;
+      document.getElementById("btnReiniciar").disabled = true;
+      cartas.forEach(c => c.classList.add("flipped"));
+      document.getElementById("message").textContent = "¡Memoriza las cartas!";
+
+      setTimeout(() => {
+        cartas.forEach(c => c.classList.remove("flipped"));
+        bloqueo = false;
+        document.getElementById("btnReiniciar").disabled = false;
+        document.getElementById("message").textContent = "";
+        iniciarTimer();
+      }, 5000); 
+    }
+
+    function manejarClickCarta(card) {
+      if (bloqueo || card.classList.contains("flipped") || card.classList.contains("hidden")) return;
+      card.classList.add("flipped");
+
+      if (!primeraCarta) {
+        primeraCarta = card;
+      } else {
+        segundaCarta = card;
+        intentos++;
+        document.getElementById("attemptsValue").textContent = intentos;
+        bloqueo = true;
+        
+        if (primeraCarta.dataset.imagen === segundaCarta.dataset.imagen) {
+          puntos++;
+          document.getElementById("scoreValue").textContent = puntos;
+          setTimeout(() => {
+            primeraCarta.classList.add("hidden");
+            segundaCarta.classList.add("hidden");
+            primeraCarta = null; segundaCarta = null;
+            bloqueo = false;
+            if (puntos === TOTAL_PARES) ganar();
+          }, 600);
+        } else {
+          setTimeout(() => {
+            primeraCarta.classList.remove("flipped");
+            segundaCarta.classList.remove("flipped");
+            primeraCarta = null; segundaCarta = null;
+            bloqueo = false;
+          }, 1000);
+        }
+      }
+    }
+
+    function actualizarTimerUI() {
+      const ss = String(tiempoRestante).padStart(2, "0");
+      const timerDisplay = document.getElementById("timerValue");
+      timerDisplay.textContent = `00:${ss}`;
+      if (tiempoRestante <= 5) timerDisplay.classList.add("low-time");
+      else timerDisplay.classList.remove("low-time");
+    }
+
+    function iniciarTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      tiempoRestante = TIEMPO_MAXIMO;
+      actualizarTimerUI();
+      timerInterval = setInterval(() => {
+        tiempoRestante--;
+        actualizarTimerUI();
+        if (tiempoRestante <= 0) perder();
+      }, 1000);
+    }
+
+    function ganar() {
+      clearInterval(timerInterval);
+      const msg = document.getElementById("message");
+      msg.innerHTML = `🎉 <strong> ¡GANASTE! </strong> 🎉<br>¡Operar eficientemente es fácil<br>con Ingersoll Rand!`;
+      msg.className = "win";
+      finalizarPartida();
+    }
+
+    function perder() {
+      clearInterval(timerInterval);
+      bloqueo = true;
+      const msg = document.getElementById("message");
+      msg.innerHTML = `⏰ <strong> ¡TIEMPO AGOTADO! </strong> ⏰<br>Inténtalo de nuevo para ganar.`;
+      msg.className = "lose win";
+      finalizarPartida();
+    }
+
+    function finalizarPartida() {
+      document.getElementById("gameContainer").style.display = "none";
+      document.getElementById("bottomBar").classList.add("win");
+    }
+
+    /* MODIFICADO: Ahora muestra el botón de inicio */
+    function reiniciarJuego() {
+      clearInterval(timerInterval);
+      // Muestra la pantalla de inicio de nuevo
+      document.getElementById("startScreen").style.display = "flex";
+      // Limpia el mensaje y restaura el contenedor
+      document.getElementById("message").textContent = "";
+      document.getElementById("message").className = "";
+      document.getElementById("gameContainer").style.display = "flex";
+      document.getElementById("bottomBar").classList.remove("win");
+    }
+
+    function ajustarEscala() {
+      const scale = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+      document.getElementById("totem").style.transform = `translate(-50%, -50%) scale(${scale})`;
+    }
+
+    window.addEventListener("resize", ajustarEscala);
+    window.addEventListener("load", ajustarEscala);
+  </script>
+</body>
+</html>
