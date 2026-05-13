@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Memorice Ingersoll Rand</title>
+  <title>Ingersoll Rand</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     * { box-sizing: border-box; }
@@ -201,7 +201,7 @@
         <button class="play-button" onclick="empezarJuegoDesdeCero()">PLAY GAME</button>
     </div>
     
-    <h1>Memorice Ingersoll Rand</h1>
+    <h1>Ingersoll Rand - Making life better</h1>
 
     <div id="topBar">
       <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value" id="timerValue">00:25</span></div>
@@ -347,7 +347,7 @@
     function ganar() {
       clearInterval(timerInterval);
       const msg = document.getElementById("message");
-      msg.innerHTML = `🎉 <strong> ¡GANASTE! </strong> 🎉<br>¡Operar eficientemente es fácil<br>con Ingersoll Rand!`;
+      msg.innerHTML = `🎉 <strong> ¡GANASTE! </strong> 🎉<br>¡Jugar bien es Fácil!<br>¡Operar eficientemente también con Ingersoll Rand!`;
       msg.className = "win";
       finalizarPartida();
     }
