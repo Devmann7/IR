@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Ingersoll Rand</title>
+  <title>Memorice Ingersoll Rand - Pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     * { box-sizing: border-box; }
@@ -64,7 +64,15 @@
       letter-spacing: 4px;
       box-shadow: 0 0 30px rgba(225, 27, 21, 0.6);
       animation: pulsePlay 2s infinite;
-      transition: transform 0.2s;
+      transition: all 0.3s ease;
+    }
+
+    .play-button:disabled {
+      background: #444;
+      border-color: #777;
+      cursor: not-allowed;
+      animation: none;
+      opacity: 0.7;
     }
 
     @keyframes pulsePlay {
@@ -124,7 +132,6 @@
       text-shadow: 0 0 12px rgba(0, 200, 255, 0.9);
       animation: winZoomFade 0.8s ease-out forwards;
     }
-    
     #message.lose { color: #ff4444; }
 
     @keyframes winZoomFade {
@@ -198,10 +205,10 @@
 
     <!-- PANTALLA DE INICIO -->
     <div id="startScreen">
-        <button class="play-button" onclick="empezarJuegoDesdeCero()">PLAY GAME</button>
+        <button id="mainPlayBtn" class="play-button" onclick="empezarJuegoDesdeCero()">Cargando...</button>
     </div>
     
-    <h1>Ingersoll Rand - Making life better</h1>
+    <h1>Memorice Ingersoll Rand</h1>
 
     <div id="topBar">
       <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value" id="timerValue">00:25</span></div>
@@ -222,24 +229,52 @@
   </div>
 
   <script>
+    // Configuración de archivos
     const FRONT_IMAGE = "img/dorso.png";
-    const TIEMPO_MAXIMO = 25;
-    
     const imagenesBase = [
       "img/img1.png", "img/img2.png", "img/img3.png", "img/img4.png",
       "img/img5.png", "img/img6.png", "img/img7.png", "img/img8.png"
     ];
-
+    
+    const TIEMPO_MAXIMO = 25;
     const TOTAL_PARES = imagenesBase.length;
+    
     let cartas = [], primeraCarta = null, segundaCarta = null;
     let bloqueo = true, puntos = 0, intentos = 0, tiempoRestante = TIEMPO_MAXIMO, timerInterval = null;
+
+    /* --- LÓGICA DE PRECARGA (Anti-Lag) --- */
+    function precargarImagenes() {
+        const imagenesACargar = [FRONT_IMAGE, ...imagenesBase];
+        const btn = document.getElementById("mainPlayBtn");
+        let contador = 0;
+
+        imagenesACargar.forEach(src => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => {
+                contador++;
+                if (contador === imagenesACargar.length) {
+                    btn.textContent = "PLAY GAME";
+                    btn.disabled = false;
+                }
+            };
+            img.onerror = () => {
+                console.error("Error al cargar:", src);
+                // Si falla una, igual permitimos jugar pero avisamos en consola
+                contador++;
+                if (contador === imagenesACargar.length) {
+                    btn.textContent = "PLAY GAME";
+                    btn.disabled = false;
+                }
+            };
+        });
+    }
 
     function empezarJuegoDesdeCero() {
         document.getElementById("startScreen").style.display = "none";
         prepararTablero();
     }
 
-    // Nueva función para dejar el juego listo antes de la vista previa
     function prepararTablero() {
       puntos = 0; intentos = 0; 
       tiempoRestante = TIEMPO_MAXIMO;
@@ -273,7 +308,6 @@
         contenedor.appendChild(card);
         cartas.push(card);
       });
-
       mostrarVistaPrevia();
     }
 
@@ -325,14 +359,6 @@
       }
     }
 
-    function actualizarTimerUI() {
-      const ss = String(tiempoRestante).padStart(2, "0");
-      const timerDisplay = document.getElementById("timerValue");
-      timerDisplay.textContent = `00:${ss}`;
-      if (tiempoRestante <= 5) timerDisplay.classList.add("low-time");
-      else timerDisplay.classList.remove("low-time");
-    }
-
     function iniciarTimer() {
       if (timerInterval) clearInterval(timerInterval);
       tiempoRestante = TIEMPO_MAXIMO;
@@ -344,10 +370,18 @@
       }, 1000);
     }
 
+    function actualizarTimerUI() {
+      const ss = String(tiempoRestante).padStart(2, "0");
+      const timerDisplay = document.getElementById("timerValue");
+      timerDisplay.textContent = `00:${ss}`;
+      if (tiempoRestante <= 5) timerDisplay.classList.add("low-time");
+      else timerDisplay.classList.remove("low-time");
+    }
+
     function ganar() {
       clearInterval(timerInterval);
       const msg = document.getElementById("message");
-      msg.innerHTML = `🎉 <strong> ¡GANASTE! </strong> 🎉<br>¡Jugar bien es Fácil!<br>¡Operar eficientemente también con Ingersoll Rand!`;
+      msg.innerHTML = `🎉 <strong> ¡GANASTE! </strong> 🎉<br>¡Operar eficientemente es fácil<br>con Ingersoll Rand!`;
       msg.className = "win";
       finalizarPartida();
     }
@@ -356,7 +390,7 @@
       clearInterval(timerInterval);
       bloqueo = true;
       const msg = document.getElementById("message");
-      msg.innerHTML = `⏰ <strong> ¡TIEMPO AGOTADO! </strong> ⏰<br>Inténtalo de nuevo para ganar.`;
+      msg.innerHTML = `⏰ <strong> ¡TIEMPO AGOTADO! </strong> ⏰<br>Aveces se falla.<br> Mejorar la eficiencia también es posible, con Ingersoll Rand.`;
       msg.className = "lose win";
       finalizarPartida();
     }
@@ -366,12 +400,9 @@
       document.getElementById("bottomBar").classList.add("win");
     }
 
-    /* MODIFICADO: Ahora muestra el botón de inicio */
     function reiniciarJuego() {
       clearInterval(timerInterval);
-      // Muestra la pantalla de inicio de nuevo
       document.getElementById("startScreen").style.display = "flex";
-      // Limpia el mensaje y restaura el contenedor
       document.getElementById("message").textContent = "";
       document.getElementById("message").className = "";
       document.getElementById("gameContainer").style.display = "flex";
@@ -384,7 +415,10 @@
     }
 
     window.addEventListener("resize", ajustarEscala);
-    window.addEventListener("load", ajustarEscala);
+    window.addEventListener("load", () => { 
+        ajustarEscala(); 
+        precargarImagenes(); 
+    });
   </script>
 </body>
 </html>
