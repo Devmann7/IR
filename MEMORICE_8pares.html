@@ -261,7 +261,7 @@
       }
     }
 
-    function iniciarTimer() {
+    /*function iniciarTimer() {
       if (timerInterval) clearInterval(timerInterval);
       tiempo = 0;
       timerInterval = setInterval(() => {
@@ -269,6 +269,28 @@
         const mm = String(Math.floor(tiempo / 60)).padStart(2, "0");
         const ss = String(tiempo % 60).padStart(2, "0");
         document.getElementById("timerValue").textContent = `${mm}:${ss}`;
+      }, 1000);
+    }*/
+
+    function iniciarTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      tiempo = 30; // Empezamos en 30 segundos
+      
+      timerInterval = setInterval(() => {
+        tiempo--; // Restamos 1 segundo
+        
+        const mm = String(Math.floor(tiempo / 60)).padStart(2, "0");
+        const ss = String(tiempo % 60).padStart(2, "0");
+        document.getElementById("timerValue").textContent = `${mm}:${ss}`;
+
+        // Si el tiempo llega a 0, detenemos el juego
+        if (tiempo <= 0) {
+          clearInterval(timerInterval);
+          bloqueo = true; // Bloquea las cartas para que no puedan seguir haciendo clic
+          const msg = document.getElementById("message");
+          msg.innerHTML = "¡Se acabó el tiempo!";
+          msg.classList.remove("win");
+        }
       }, 1000);
     }
 
