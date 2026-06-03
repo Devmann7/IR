@@ -305,10 +305,10 @@
 
     function reiniciarJuego() {
       clearInterval(timerInterval);
-      puntos = 0; intentos = 0; tiempo = 0;
+      puntos = 0; intentos = 0; tiempo = 30;
       document.getElementById("scoreValue").textContent = "0";
       document.getElementById("attemptsValue").textContent = "0";
-      document.getElementById("timerValue").textContent = "00:00";
+      document.getElementById("timerValue").textContent = "00:30";
       document.getElementById("message").textContent = "";
       document.getElementById("message").classList.remove("win");
       document.getElementById("gameContainer").style.display = "flex";
